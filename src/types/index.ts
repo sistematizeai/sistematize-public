@@ -10,3 +10,19 @@ export interface Business {
   state: string | null;
   business_hours: Record<string, unknown>;
 }
+
+export interface PublicCategory {
+  id: string;
+  name: string;
+  color: string;
+  services: PublicService[];
+}
+
+export interface PublicService {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  price_type: string;
+  duration_minutes: number;
+}
