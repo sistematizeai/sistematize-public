@@ -1,22 +1,26 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @theme inline {
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --color-accent: #7c3aed;
-  --color-accent-light: #a78bfa;
+  --color-accent: #4F5AE5;
+  --color-accent-soft: rgba(79, 90, 229, 0.06);
+  --color-accent-light: #6C5CE7;
+  --color-accent-muted: rgba(79, 90, 229, 0.12);
   --color-green: #10b981;
-  --color-text-primary: #1a1a2e;
+  --color-green-soft: rgba(16, 185, 129, 0.08);
+  --color-text-primary: #1e1b4b;
   --color-text-secondary: #6b7280;
   --color-text-muted: #9ca3af;
-  --color-border: rgba(0,0,0,0.06);
-  --color-bg-surface: #f0f1f6;
+  --color-border: rgba(0, 0, 0, 0.05);
+  --color-bg-surface: #f8f8fc;
+  --color-bg-deep: #ffffff;
 }
 
 body {
-  background: #f5f6fa;
+  background: var(--color-bg-deep);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 .scrollbar-hide {
@@ -25,4 +29,14 @@ body {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
