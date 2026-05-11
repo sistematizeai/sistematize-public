@@ -1,3 +1,4 @@
+import { Metadata } from 'next';
 import { Business, PublicCategory, PublicCombo } from '@/types';
 import PublicHeader from '@/components/public-header';
 import HeroSection from '@/components/hero-section';
@@ -21,6 +22,33 @@ async function getBusiness(slug: string): Promise<Business | null> {
   } catch {
     return null;
   }
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const business = await getBusiness(slug);
+
+  if (!business) {
+    return {
+      title: 'Salao nao encontrado | Sistematize',
+    };
+  }
+
+  const title = `${business.name} — Agendamento Online | Sistematize`;
+  const description = `Agende seu horario no ${business.name}. Rapido, facil e online.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      ...(business.cover_image_url && {
+        images: [{ url: business.cover_image_url }],
+      }),
+    },
+  };
 }
 
 async function getServices(slug: string): Promise<PublicCategory[]> {

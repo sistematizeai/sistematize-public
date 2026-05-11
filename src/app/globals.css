@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: var(--font-plus-jakarta), system-ui, sans-serif;
   --color-accent: #4F5AE5;
   --color-accent-soft: rgba(79, 90, 229, 0.06);
   --color-accent-light: #6C5CE7;
