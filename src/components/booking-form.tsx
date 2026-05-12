@@ -73,6 +73,13 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [paymentInfo, setPaymentInfo] = useState<{
+    invoice_url?: string;
+    pix_payload?: string;
+    pix_qr_code?: string;
+    status?: string;
+    value?: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -160,8 +167,13 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.message || 'Erro ao criar agendamento. Tente novamente.');
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.message || 'Erro ao criar agendamento. Tente novamente.');
+      }
+
+      const resData = await res.json().catch(() => null);
+      if (resData?.payment) {
+        setPaymentInfo(resData.payment);
       }
 
       setSuccess(true);
@@ -182,9 +194,13 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
             </svg>
           </div>
 
-          <h2 className="text-2xl font-extrabold text-text-primary mb-2">Agendamento realizado!</h2>
+          <h2 className="text-2xl font-extrabold text-text-primary mb-2">
+            {paymentInfo ? 'Agendamento aguardando pagamento' : 'Agendamento realizado!'}
+          </h2>
           <p className="text-text-secondary text-sm mb-6">
-            Seu agendamento foi registrado com sucesso. O estabelecimento entrara em contato para confirmar.
+            {paymentInfo
+              ? 'Seu agendamento sera confirmado automaticamente apos o pagamento.'
+              : 'Seu agendamento foi registrado com sucesso. O estabelecimento entrara em contato para confirmar.'}
           </p>
 
           {(selectedService || selectedCombo) && (
@@ -201,6 +217,33 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                   selectedService!.price_type !== 'on_request' ? formatPrice(selectedService!.price) : 'Sob consulta'
                 }
               </p>
+            </div>
+          )}
+
+          {paymentInfo?.invoice_url && (
+            <div className="mb-6 space-y-3">
+              <a
+                href={paymentInfo.invoice_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#00C853] to-[#00E676] text-white font-semibold text-sm rounded-xl hover:opacity-90 transition-opacity"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                  <line x1="1" y1="10" x2="23" y2="10" />
+                </svg>
+                Pagar agora
+              </a>
+              {paymentInfo.pix_payload && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(paymentInfo.pix_payload!);
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 border border-border text-text-primary font-semibold text-sm rounded-xl hover:bg-bg-surface transition-colors cursor-pointer"
+                >
+                  Copiar codigo Pix
+                </button>
+              )}
             </div>
           )}
 

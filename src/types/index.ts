@@ -38,6 +38,9 @@ export interface PublicService {
   price_type: string;
   duration_minutes: number;
   image_url: string | null;
+  requires_payment?: boolean;
+  payment_type?: string;
+  deposit_amount?: number;
 }
 
 export interface PublicComboService {

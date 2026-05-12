@@ -47,9 +47,16 @@ function ServiceItem({ service, slug, categoryColor }: { service: PublicService;
       {/* Info */}
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
         <div>
-          <h3 className="font-bold text-text-primary text-base group-hover:text-accent transition-colors leading-snug mb-1">
-            {service.name}
-          </h3>
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-bold text-text-primary text-base group-hover:text-accent transition-colors leading-snug">
+              {service.name}
+            </h3>
+            {service.requires_payment && service.payment_type !== 'manual' && (
+              <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md whitespace-nowrap">
+                {service.payment_type === 'deposit' ? 'Sinal' : 'Pag.'} obrigatorio
+              </span>
+            )}
+          </div>
           {service.description && (
             <p className="text-text-muted text-sm leading-relaxed line-clamp-2">
               {service.description}
