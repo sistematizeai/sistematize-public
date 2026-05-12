@@ -92,8 +92,14 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
           fetch(`${API_URL}/api/public/${slug}/services`),
           fetch(`${API_URL}/api/public/${slug}/combos`),
         ]);
-        if (svcRes.ok) setCategories(await svcRes.json());
-        if (comboRes.ok) setCombos(await comboRes.json());
+        if (svcRes.ok) {
+          const data = await svcRes.json();
+          setCategories(Array.isArray(data) ? data : []);
+        }
+        if (comboRes.ok) {
+          const data = await comboRes.json();
+          setCombos(Array.isArray(data) ? data : []);
+        }
       } catch {
         // silently fail
       } finally {
@@ -354,7 +360,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                         </svg>
                         {selectedCombo.duration_minutes} min
                       </span>
-                      <span className="text-xs text-text-muted">{selectedCombo.services.length} servicos</span>
+                      <span className="text-xs text-text-muted">{(selectedCombo.services || []).length} servicos</span>
                       <span className="text-xs font-semibold text-accent">{formatPrice(selectedCombo.price)}</span>
                     </div>
                   </div>
@@ -445,7 +451,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                                   </span>
                                 )}
                               </div>
-                              <span className="text-xs text-text-muted">{combo.services.length} servicos - {combo.duration_minutes} min</span>
+                              <span className="text-xs text-text-muted">{(combo.services || []).length} servicos - {combo.duration_minutes} min</span>
                             </div>
                             <div className="flex flex-col items-end flex-shrink-0">
                               {hasDiscount && (
@@ -531,7 +537,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
               {selectedCombo && (
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-text-secondary">Servicos inclusos</span>
-                  <span className="text-sm text-text-primary">{selectedCombo.services.map(s => s.name).join(', ')}</span>
+                  <span className="text-sm text-text-primary">{(selectedCombo.services || []).map(s => s.name).join(', ')}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
