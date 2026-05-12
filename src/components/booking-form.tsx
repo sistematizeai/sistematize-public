@@ -68,6 +68,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
   const [selectedComboId, setSelectedComboId] = useState<string | null>(preSelectedComboId || null);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
@@ -150,6 +151,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
       const body: Record<string, unknown> = {
         client_name: name.trim(),
         client_phone: phone.replace(/\D/g, ''),
+        client_email: email.trim() || undefined,
         date,
         start_time: time,
         notes: notes.trim() || undefined,
@@ -490,6 +492,11 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
               <label htmlFor="phone" className={labelClass}>Telefone</label>
               <input type="tel" id="phone" value={phone} onChange={handlePhoneChange}
                 placeholder="(11) 99999-9999" required className={inputClass} />
+            </div>
+            <div className="sm:col-span-2">
+              <label htmlFor="email" className={labelClass}>Email <span className="text-text-muted font-normal">(opcional)</span></label>
+              <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="seu@email.com" className={inputClass} />
             </div>
           </div>
         </div>
