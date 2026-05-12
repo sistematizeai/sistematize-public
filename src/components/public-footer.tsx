@@ -30,10 +30,16 @@ export default function PublicFooter({ business }: PublicFooterProps) {
 
   if (!hasContact && !hasSocial) {
     return (
-      <footer className="py-8 text-center border-t border-border">
-        <p className="text-text-muted text-xs">
-          Agendamento online por <span className="font-semibold text-text-secondary">Sistematize</span>
-        </p>
+      <footer className="py-8 border-t border-border">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+          <p className="text-text-muted text-xs">
+            Agendamento online por <span className="font-semibold text-text-secondary">Sistematize</span>
+          </p>
+          <div className="flex gap-4">
+            <a href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</a>
+            <a href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</a>
+          </div>
+        </div>
       </footer>
     );
   }
@@ -159,10 +165,14 @@ export default function PublicFooter({ business }: PublicFooterProps) {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-border/60 text-center">
+        <div className="mt-10 pt-6 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-text-muted text-xs">
             Agendamento online por <span className="font-semibold text-text-secondary">Sistematize</span>
           </p>
+          <div className="flex gap-4">
+            <a href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</a>
+            <a href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</a>
+          </div>
         </div>
       </div>
     </footer>
