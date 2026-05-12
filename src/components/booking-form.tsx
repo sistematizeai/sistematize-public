@@ -72,6 +72,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [notes, setNotes] = useState('');
+  const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [paymentInfo, setPaymentInfo] = useState<{
@@ -141,6 +142,10 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
       setError('Por favor, preencha todos os campos obrigatorios e selecione um servico ou combo.');
       return;
     }
+    if (!consent) {
+      setError('Voce precisa concordar com a Politica de Privacidade para continuar.');
+      return;
+    }
     if (phoneDigits.length < 10) {
       setError('Informe um numero de telefone valido com DDD (minimo 10 digitos).');
       return;
@@ -155,6 +160,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
         date,
         start_time: time,
         notes: notes.trim() || undefined,
+        lgpd_consent: true,
       };
       if (selectedComboId) {
         body.combo_id = selectedComboId;
@@ -555,6 +561,23 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
             </div>
           </div>
         )}
+
+        {/* ─── LGPD CONSENT ─── */}
+        <label className="flex items-start gap-3 mb-6 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="w-4 h-4 mt-0.5 text-accent accent-accent rounded focus:ring-accent/20"
+          />
+          <span className="text-xs text-text-secondary leading-relaxed">
+            Ao agendar, concordo com a{' '}
+            <a href="/privacidade" target="_blank" className="text-accent hover:underline font-medium">Politica de Privacidade</a>
+            {' '}e os{' '}
+            <a href="/termos" target="_blank" className="text-accent hover:underline font-medium">Termos de Uso</a>
+            {' '}do Sistematize e autorizo o tratamento dos meus dados para fins de agendamento.
+          </span>
+        </label>
 
         {/* ─── SUBMIT ─── */}
         <button
