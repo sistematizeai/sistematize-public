@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Business } from '@/types';
 
 interface PublicFooterProps {
@@ -36,8 +37,8 @@ export default function PublicFooter({ business }: PublicFooterProps) {
             Agendamento online por <span className="font-semibold text-text-secondary">Sistematize</span>
           </p>
           <div className="flex gap-4">
-            <a href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</a>
-            <a href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</a>
+            <Link href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</Link>
+            <Link href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</Link>
           </div>
         </div>
       </footer>
@@ -170,8 +171,8 @@ export default function PublicFooter({ business }: PublicFooterProps) {
             Agendamento online por <span className="font-semibold text-text-secondary">Sistematize</span>
           </p>
           <div className="flex gap-4">
-            <a href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</a>
-            <a href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</a>
+            <Link href="/privacidade" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Privacidade</Link>
+            <Link href="/termos" className="text-xs text-text-muted hover:text-text-secondary transition-colors">Termos de Uso</Link>
           </div>
         </div>
       </div>

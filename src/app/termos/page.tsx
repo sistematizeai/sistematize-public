@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Termos de Uso — Sistematize',
@@ -16,7 +17,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-bold text-[#1a1a1a] mb-3">1. Aceitacao dos termos</h2>
             <p>
               Ao utilizar a plataforma Sistematize, voce concorda com estes Termos de Uso e com nossa{' '}
-              <a href="/privacidade" className="text-[#4F5AE5] hover:underline">Politica de Privacidade</a>.
+              <Link href="/privacidade" className="text-[#4F5AE5] hover:underline">Politica de Privacidade</Link>.
               Caso nao concorde, nao utilize a plataforma.
             </p>
           </section>
