@@ -61,3 +61,17 @@ export interface PublicCombo {
   duration_minutes: number;
   services: PublicComboService[];
 }
+
+export interface PublicAvailabilityCollaborator {
+  id: string;
+  name: string;
+  slots: string[];
+}
+
+export interface PublicAvailability {
+  date: string;
+  duration_minutes: number;
+  service_ids: string[];
+  slots: string[];
+  collaborators: PublicAvailabilityCollaborator[];
+}

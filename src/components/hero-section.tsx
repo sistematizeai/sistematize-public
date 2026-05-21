@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Business } from '@/types';
 
 interface HeroSectionProps {
@@ -120,7 +121,7 @@ function DecorativePlaceholder({ business }: { business: Business }) {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <div className="w-24 h-24 rounded-3xl bg-white shadow-2xl shadow-accent/15 flex items-center justify-center border border-white/80">
           {business.logo_url ? (
-            <img src={business.logo_url} alt="" className="w-16 h-16 rounded-2xl object-cover" />
+            <Image src={business.logo_url} alt="" width={64} height={64} className="w-16 h-16 rounded-2xl object-cover" />
           ) : (
             <span className="text-4xl font-extrabold bg-gradient-to-br from-[#4A6CF7] to-[#6C5CE7] bg-clip-text text-transparent">
               {business.name.charAt(0)}
@@ -169,10 +170,12 @@ function SplitHero({ business }: HeroSectionProps) {
           <div className="hidden lg:block relative self-stretch">
             {hasCover ? (
               <div className="absolute inset-0 -right-[calc((100vw-72rem)/2+1rem)]">
-                <img
+                <Image
                   src={business.cover_image_url!}
                   alt={business.name}
-                  className="w-full h-full object-cover object-center"
+                  fill
+                  sizes="50vw"
+                  className="object-cover object-center"
                 />
                 <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-white to-transparent" />
               </div>
@@ -194,10 +197,13 @@ function FullcoverHero({ business }: HeroSectionProps) {
     <section className="relative overflow-hidden">
       {hasCover ? (
         <div className="absolute inset-0">
-          <img
+          <Image
             src={business.cover_image_url!}
             alt={business.name}
-            className="w-full h-full object-cover object-center"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
         </div>
@@ -296,7 +302,7 @@ function MinimalHero({ business }: HeroSectionProps) {
       <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <div className="py-20 sm:py-28 lg:py-32 min-h-[480px] sm:min-h-[520px] flex flex-col items-center justify-center text-center">
           {business.logo_url && (
-            <img src={business.logo_url} alt={business.name} className="w-16 h-16 rounded-2xl object-cover mb-8 shadow-lg shadow-accent/10" />
+            <Image src={business.logo_url} alt={business.name} width={64} height={64} className="w-16 h-16 rounded-2xl object-cover mb-8 shadow-lg shadow-accent/10" />
           )}
           <h1 className="text-4xl sm:text-[2.75rem] lg:text-5xl xl:text-6xl font-extrabold text-text-primary tracking-tight leading-[1.15] mb-5">
             <HeroTitle business={business} />

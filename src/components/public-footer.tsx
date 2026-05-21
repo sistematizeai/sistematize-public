@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Business } from '@/types';
 
 interface PublicFooterProps {
@@ -53,8 +54,8 @@ export default function PublicFooter({ business }: PublicFooterProps) {
           <div>
             <div className="flex items-center gap-3 mb-4">
               {business.logo_url ? (
-                <div className="w-10 h-10 rounded-xl overflow-hidden border border-border">
-                  <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-border">
+                  <Image src={business.logo_url} alt={business.name} fill sizes="40px" className="object-cover" />
                 </div>
               ) : (
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4A6CF7] to-[#6C5CE7] flex items-center justify-center">

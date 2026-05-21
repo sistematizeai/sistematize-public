@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Business } from '@/types';
 
 interface PublicHeaderProps {
@@ -17,8 +18,8 @@ export default function PublicHeader({ business }: PublicHeaderProps) {
           {/* Logo + Name */}
           <a href={`/${business.slug}`} className="flex items-center gap-3">
             {business.logo_url ? (
-              <div className="w-9 h-9 rounded-xl overflow-hidden border border-border">
-                <img src={business.logo_url} alt={business.name} className="w-full h-full object-cover" />
+              <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-border">
+                <Image src={business.logo_url} alt={business.name} fill sizes="36px" className="object-cover" />
               </div>
             ) : (
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4A6CF7] to-[#6C5CE7] flex items-center justify-center">

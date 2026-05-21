@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PublicCombo } from '@/types';
 
 interface CombosModalProps {
@@ -22,12 +23,14 @@ function ComboItem({ combo, slug }: { combo: PublicCombo; slug: string }) {
       href={`/${slug}/agendar?combo=${combo.id}`}
       className="group flex gap-4 p-4 rounded-2xl border border-border bg-white hover:border-accent/20 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
     >
-      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden flex-shrink-0">
+      <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden flex-shrink-0">
         {combo.image_url ? (
-          <img
+          <Image
             src={combo.image_url}
             alt={combo.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            fill
+            sizes="112px"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, FormEvent, ChangeEvent } from 'react';
-import { PublicCategory, PublicService, PublicCombo } from '@/types';
+import { PublicCategory, PublicService, PublicCombo, PublicAvailability } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -71,6 +71,10 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
   const [email, setEmail] = useState('');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
+  const [availability, setAvailability] = useState<PublicAvailability | null>(null);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [selectedCollaboratorId, setSelectedCollaboratorId] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [consent, setConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -92,13 +96,27 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
           fetch(`${API_URL}/api/public/${slug}/services`),
           fetch(`${API_URL}/api/public/${slug}/combos`),
         ]);
+        let nextCategories: PublicCategory[] = [];
+        let nextCombos: PublicCombo[] = [];
+
         if (svcRes.ok) {
           const data = await svcRes.json();
-          setCategories(Array.isArray(data) ? data : []);
+          nextCategories = Array.isArray(data) ? data : [];
         }
         if (comboRes.ok) {
           const data = await comboRes.json();
-          setCombos(Array.isArray(data) ? data : []);
+          nextCombos = Array.isArray(data) ? data : [];
+        }
+
+        setCategories(nextCategories);
+        setCombos(nextCombos);
+
+        if (preSelectedServiceId) {
+          const allServices = nextCategories.flatMap(c => c.services);
+          setSelectedServiceId(allServices.some(s => s.id === preSelectedServiceId) ? preSelectedServiceId : null);
+        }
+        if (preSelectedComboId) {
+          setSelectedComboId(nextCombos.some(c => c.id === preSelectedComboId) ? preSelectedComboId : null);
         }
       } catch {
         // silently fail
@@ -107,24 +125,47 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
       }
     }
     fetchData();
-  }, [slug]);
+  }, [slug, preSelectedServiceId, preSelectedComboId]);
 
   useEffect(() => {
-    if (preSelectedServiceId && categories.length > 0) {
-      const allServices = categories.flatMap(c => c.services);
-      if (!allServices.some(s => s.id === preSelectedServiceId)) {
-        setSelectedServiceId(null);
-      }
-    }
-  }, [categories, preSelectedServiceId]);
+    const selectionId = selectedComboId || selectedServiceId;
+    if (!selectionId || !date) return;
 
-  useEffect(() => {
-    if (preSelectedComboId && combos.length > 0) {
-      if (!combos.some(c => c.id === preSelectedComboId)) {
-        setSelectedComboId(null);
+    const controller = new AbortController();
+    async function fetchAvailability() {
+      setAvailabilityLoading(true);
+      setAvailabilityError(null);
+      try {
+        const params = new URLSearchParams({ date });
+        if (selectedComboId) {
+          params.set('combo_id', selectedComboId);
+        } else if (selectedServiceId) {
+          params.set('service_id', selectedServiceId);
+        }
+
+        const res = await fetch(`${API_URL}/api/public/${slug}/availability?${params.toString()}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.message || 'Nao foi possivel carregar os horarios disponiveis.');
+        }
+        const data = await res.json();
+        setAvailability(data);
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setAvailability(null);
+        setAvailabilityError(err instanceof Error ? err.message : 'Nao foi possivel carregar os horarios disponiveis.');
+      } finally {
+        if (!controller.signal.aborted) {
+          setAvailabilityLoading(false);
+        }
       }
     }
-  }, [combos, preSelectedComboId]);
+
+    fetchAvailability();
+    return () => controller.abort();
+  }, [slug, selectedServiceId, selectedComboId, date]);
 
   const selectedService: PublicService | null = selectedComboId ? null : categories
     .flatMap((c) => c.services)
@@ -134,6 +175,43 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
 
   const hasSelection = !!selectedServiceId || !!selectedComboId;
   const currentStep = !hasSelection ? 1 : (!date || !time) ? 2 : 3;
+  const availableCollaborators = (availability?.collaborators || []).filter((collaborator) => collaborator.slots.length > 0);
+  const selectedCollaborator = availableCollaborators.find((collaborator) => collaborator.id === selectedCollaboratorId) || null;
+  const availableSlots = selectedCollaborator ? selectedCollaborator.slots : (availability?.slots || []);
+
+  function resetAvailabilitySelection() {
+    setTime('');
+    setSelectedCollaboratorId(null);
+    setAvailability(null);
+    setAvailabilityError(null);
+  }
+
+  function handleServiceSelect(serviceId: string) {
+    setSelectedServiceId(serviceId);
+    setSelectedComboId(null);
+    resetAvailabilitySelection();
+  }
+
+  function handleComboSelect(comboId: string) {
+    setSelectedComboId(comboId);
+    setSelectedServiceId(null);
+    resetAvailabilitySelection();
+  }
+
+  function handleDateChange(value: string) {
+    setDate(value);
+    resetAvailabilitySelection();
+  }
+
+  function handleClearService() {
+    setSelectedServiceId(null);
+    resetAvailabilitySelection();
+  }
+
+  function handleClearCombo() {
+    setSelectedComboId(null);
+    resetAvailabilitySelection();
+  }
 
   function handlePhoneChange(e: ChangeEvent<HTMLInputElement>) {
     setPhone(formatPhone(e.target.value));
@@ -172,6 +250,9 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
         body.combo_id = selectedComboId;
       } else {
         body.service_id = selectedServiceId;
+      }
+      if (selectedCollaboratorId) {
+        body.collaborator_id = selectedCollaboratorId;
       }
 
       const res = await fetch(`${API_URL}/api/public/${slug}/appointments`, {
@@ -329,7 +410,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedServiceId(null)}
+                  onClick={handleClearService}
                   className="text-xs text-text-muted hover:text-accent transition-colors font-medium cursor-pointer"
                 >
                   Trocar
@@ -367,7 +448,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                 </div>
                 <button
                   type="button"
-                  onClick={() => setSelectedComboId(null)}
+                  onClick={handleClearCombo}
                   className="text-xs text-text-muted hover:text-accent transition-colors font-medium cursor-pointer"
                 >
                   Trocar
@@ -402,7 +483,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                             type="radio"
                             name="service"
                             checked={selectedServiceId === service.id}
-                            onChange={() => { setSelectedServiceId(service.id); setSelectedComboId(null); }}
+                            onChange={() => handleServiceSelect(service.id)}
                             className="w-4 h-4 text-accent focus:ring-accent/20 accent-accent"
                           />
                           <div className="flex-1 min-w-0">
@@ -439,7 +520,7 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                               type="radio"
                               name="service"
                               checked={selectedComboId === combo.id}
-                              onChange={() => { setSelectedComboId(combo.id); setSelectedServiceId(null); }}
+                              onChange={() => handleComboSelect(combo.id)}
                               className="w-4 h-4 text-accent focus:ring-accent/20 accent-accent"
                             />
                             <div className="flex-1 min-w-0">
@@ -478,13 +559,77 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="date" className={labelClass}>Data</label>
-              <input type="date" id="date" value={date} onChange={(e) => setDate(e.target.value)}
+              <input type="date" id="date" value={date} onChange={(e) => handleDateChange(e.target.value)}
                 min={getTodayString()} required className={inputClass} />
             </div>
-            <div>
-              <label htmlFor="time" className={labelClass}>Horario</label>
-              <input type="time" id="time" value={time} onChange={(e) => setTime(e.target.value)}
-                required className={inputClass} />
+            <div className="sm:col-span-2">
+              <label className={labelClass}>Profissional</label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={!availability || availabilityLoading || availableCollaborators.length === 0}
+                  onClick={() => { setSelectedCollaboratorId(null); setTime(''); }}
+                  className={`px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                    !selectedCollaboratorId
+                      ? 'border-accent bg-accent-soft text-accent'
+                      : 'border-border bg-white text-text-secondary hover:border-accent/40'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  Qualquer profissional
+                </button>
+                {availableCollaborators.map((collaborator) => (
+                  <button
+                    key={collaborator.id}
+                    type="button"
+                    onClick={() => { setSelectedCollaboratorId(collaborator.id); setTime(''); }}
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                      selectedCollaboratorId === collaborator.id
+                        ? 'border-accent bg-accent-soft text-accent'
+                        : 'border-border bg-white text-text-secondary hover:border-accent/40'
+                    }`}
+                  >
+                    {collaborator.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="sm:col-span-2">
+              <label className={labelClass}>Horario</label>
+              {!hasSelection || !date ? (
+                <p className="text-sm text-text-muted bg-bg-surface rounded-xl border border-border px-4 py-3">
+                  Selecione servico e data para ver os horarios.
+                </p>
+              ) : availabilityLoading ? (
+                <div className="flex items-center gap-2 text-sm text-text-muted bg-bg-surface rounded-xl border border-border px-4 py-3">
+                  <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
+                  Carregando horarios...
+                </div>
+              ) : availabilityError ? (
+                <p className="text-sm text-red-700 bg-red-50 rounded-xl border border-red-200 px-4 py-3">
+                  {availabilityError}
+                </p>
+              ) : availableSlots.length === 0 ? (
+                <p className="text-sm text-text-muted bg-bg-surface rounded-xl border border-border px-4 py-3">
+                  Nenhum horario disponivel para esta data.
+                </p>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setTime(slot)}
+                      className={`h-11 rounded-xl border text-sm font-semibold transition-colors ${
+                        time === slot
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-border bg-white text-text-primary hover:border-accent/50 hover:bg-accent-soft'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -556,6 +701,12 @@ export default function BookingForm({ slug, preSelectedServiceId, preSelectedCom
                 <span className="text-sm text-text-secondary">Horario</span>
                 <span className="text-sm text-text-primary">{time}</span>
               </div>
+              {selectedCollaborator && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-secondary">Profissional</span>
+                  <span className="text-sm text-text-primary">{selectedCollaborator.name}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between pt-2 border-t border-border/60">
                 <span className="text-sm font-semibold text-text-primary">Valor</span>
                 <span className="text-lg font-bold text-accent">
